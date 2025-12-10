@@ -1,0 +1,341 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import heroBg from "../../assets/background.svg";
+import { ImageUpscale, Scissors, Upload, Infinity, Shield, BadgeCheck, Zap, LayoutGrid, PackageOpen, Crop, Fullscreen, FileArchive, Layers, Images, ShoppingBag, Megaphone, Cog } from "lucide-react";
+const canonical = Astro.url?.href ?? "/smart-resize-and-crop";
+const pageTitle = "Smart Resize & Crop — Recorte, Redimensione e Comprimir Imagens em Lote";
+const description = "Ferramenta 100% gratuita para recortar, redimensionar e comprimir imagens em lote, sem limites. Ideal para e‑commerce, social media e times que precisam otimizar imagens rapidamente.";
+const ogImage = heroBg;
+const jsonLdSoftware = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Smart Resize & Crop",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "description": description,
+  "url": canonical,
+  "offers": {
+    "@type": "Offer",
+    "price": 0,
+    "priceCurrency": "BRL"
+  }
+};
+const jsonLdBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Início",
+      "item": "/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Smart Resize & Crop",
+      "item": canonical
+    }
+  ]
+};
+const jsonLdFaq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "A ferramenta é realmente gratuita?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Sim. O Smart Resize & Crop é 100% gratuito e não possui limite de imagens."}
+    },
+    {
+      "@type": "Question",
+      "name": "Meus arquivos são enviados para algum servidor?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Não. O processamento ocorre no seu navegador, garantindo privacidade e velocidade."}
+    },
+    {
+      "@type": "Question",
+      "name": "Quais formatos são suportados?",
+      "acceptedAnswer": {"@type": "Answer", "text": "PNG e JPEG por padrão. WebP e AVIF quando disponíveis no navegador."}
+    },
+    {
+      "@type": "Question",
+      "name": "Posso definir tamanhos diferentes para cada imagem?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Sim. É possível aplicar presets ou ajustes individuais por imagem."}
+    }
+  ]
+};
+---
+
+<Layout title={pageTitle}>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index,follow" />
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json">{JSON.stringify(jsonLdSoftware)}</script>
+    <script type="application/ld+json">{JSON.stringify(jsonLdBreadcrumb)}</script>
+    <script type="application/ld+json">{JSON.stringify(jsonLdFaq)}</script>
+  </Fragment>
+
+  <header class="relative bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 h-22 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="bg-slate-200 p-2 rounded-lg size-8 flex items-center justify-center">
+          <Layers className="size-6 text-slate-600" />
+        </div>
+        <div class="flex gap-2 items-center">
+          <span class="text-lg text-slate-700 font-bold">Kayla</span>
+          <span class="text-xs text-slate-500">Tools</span>
+        </div>
+      </div>
+      <button class="px-4 py-2 rounded-md border text-sm font-medium bg-white hover:bg-neutral-50">Fazer Login</button>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 py-16">
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+        <div>
+
+          <div class="flex items-center gap-3 mb-10">
+            <div class="rounded-xl flex items-center justify-center">
+              <ImageUpscale className="size-10 text-slate-300" />
+            </div>
+            <div class="flex flex-col">
+              <span class="text-lg font-bold">Smart Resize & Crop</span>
+              <span class="text-xs text-slate-500">Powered by <span class="font-semibold">Kayla Tools</span></span>
+            </div>
+          </div>
+          
+          <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-wide">Recorte, redimensione e comprima imagens em lote</h1>
+          <h3 class="text-lg font-bold tracking-wide mt-4 bg-linear-to-r from-teal-200 to-yellow-200 text-slate-900 px-4 py-2 rounded-md inline-block">Sem limites e gratuíto!</h3>
+          <p class="mt-4 text-lg text-slate-600 max-w-2xl">Otimize seu fluxo visual com uma ferramenta rápida e segura, ideal para e‑commerce, social media, designers e times de produto.</p>
+          <div class="mt-8 flex gap-3">
+            <div class="border-2 border-dashed border-slate-800 text-slate-800 px-5 py-3 rounded-md text-sm font-medium flex items-center gap-2 w-full justify-center">
+              <Upload className="w-4 h-4" /> Carregar Imagens
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="absolute -inset-8 bg-linear-to-r from-teal-200 to-yellow-200 blur-3xl opacity-40 rounded-3xl"></div>
+          <div class="relative p-4">
+            <img src="/resize-crop-illustration.png" alt="Ilustração do Smart Resize & Crop com exemplos de recorte e redimensionamento" class="rounded-md w-full h-auto object-cover" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="beneficios" class="max-w-6xl mx-auto px-4 py-14">
+      <h2 class="text-2xl md:text-3xl font-bold">Benefícios</h2>
+      <p class="mt-2 text-neutral-600">Tudo o que você precisa para preparar suas imagens com qualidade e velocidade.</p>
+      <div class="grid md:grid-cols-3 gap-6 mt-8">
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center">
+            <Infinity class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">100% gratuito e sem limites</h3>
+          <p class="mt-1 text-neutral-600">Processamento em lote sem restrições de quantidade ou tamanho.</p>
+        </article>
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center"> 
+            <Shield class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Privacidade garantida</h3>
+          <p class="mt-1 text-neutral-600">Tudo acontece no seu navegador. Sem upload, sem filas, sem riscos.</p>
+        </article>
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center">
+            <BadgeCheck class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Qualidade preservada</h3>
+          <p class="mt-1 text-neutral-600">Controle preciso de corte, dimensões e compressão sem perda visível.</p>
+        </article>
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center">
+            <Zap class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Velocidade</h3>
+          <p class="mt-1 text-neutral-600">Interface otimizada e presets que aceleram o trabalho repetitivo.</p>
+        </article>
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center">
+            <LayoutGrid class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Padronização</h3>
+          <p class="mt-1 text-neutral-600">Defina regras por canal (Instagram, Marketplace, Catálogo) e aplique em lote.</p>
+        </article>
+        <article class="p-6 border rounded-2xl bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-teal-100 flex items-center justify-center">
+            <PackageOpen class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Integração fácil</h3>
+          <p class="mt-1 text-neutral-600">Baixe tudo compactado, pronto para publicar no seu CMS ou loja.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 py-6">
+      <div class="relative">
+        <div class="absolute -inset-x-6 -inset-y-4 bg-gradient-to-r from-teal-200 to-yellow-200 blur-3xl opacity-30 rounded-3xl"></div>
+        <div class="relative p-6 rounded-2xl border bg-white shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold">Pronto para começar?</h2>
+            <p class="mt-1 text-neutral-600">Carregue suas imagens e aplique cortes, tamanhos e compressão em lote.</p>
+          </div>
+          <div class="border-2 border-dashed border-slate-800 text-slate-800 px-5 py-3 rounded-md text-sm font-medium flex items-center gap-2">
+            <Upload className="w-4 h-4" /> Carregar Imagens
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-neutral-50 border-y">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h2 class="text-2xl md:text-3xl font-bold">Recursos</h2>
+        <div class="grid md:grid-cols-3 gap-6 mt-8">
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <Crop class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Corte inteligente</h3>
+            <p class="mt-1 text-neutral-600">Ajuste manual com zoom fino, guias e alinhamento fluido.</p>
+          </article>
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <Fullscreen class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Redimensionamento</h3>
+            <p class="mt-1 text-neutral-600">Presets para canais e dimensões personalizadas por imagem.</p>
+          </article>
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <FileArchive class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Compressão</h3>
+            <p class="mt-1 text-neutral-600">Controle granular de qualidade para reduzir tamanho sem perda perceptível.</p>
+          </article>
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <Layers class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Lotes</h3>
+            <p class="mt-1 text-neutral-600">Importe dezenas de arquivos, aplique presets e exporte tudo.</p>
+          </article>
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <Images class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Formatos</h3>
+            <p class="mt-1 text-neutral-600">PNG, JPEG e, quando disponível, WebP/AVIF para máxima eficiência.</p>
+          </article>
+          <article class="p-6 rounded-2xl border bg-white shadow-sm">
+            <div class="w-9 h-9 rounded-md bg-lime-100 flex items-center justify-center">
+              <PackageOpen class="size-5 text-slate-900" />
+            </div>
+            <h3 class="mt-3 font-semibold">Exportação</h3>
+            <p class="mt-1 text-neutral-600">Pacote ZIP com estrutura organizada por canal ou coleção.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 py-14">
+      <h2 class="text-2xl md:text-3xl font-bold">Para quem é</h2>
+      <div class="grid md:grid-cols-3 gap-6 mt-6">
+        <article class="p-6 rounded-2xl border bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-yellow-100 flex items-center justify-center">
+            <ShoppingBag class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">E‑commerce</h3>
+          <p class="mt-1 text-neutral-600">Crie fichas com imagens padronizadas, fundo consistente e tamanhos ideais.</p>
+        </article>
+        <article class="p-6 rounded-2xl border bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-yellow-100 flex items-center justify-center">
+            <Megaphone class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Social Media</h3>
+          <p class="mt-1 text-neutral-600">Otimize campanhas e orgânicos com formatos e pesos perfeitos por canal.</p>
+        </article>
+        <article class="p-6 rounded-2xl border bg-white shadow-sm">
+          <div class="w-9 h-9 rounded-md bg-yellow-100 flex items-center justify-center">
+            <Cog class="size-5 text-slate-900" />
+          </div>
+          <h3 class="mt-3 font-semibold">Times de Produto</h3>
+          <p class="mt-1 text-neutral-600">Padronize galerias e assets sem depender de ferramentas pesadas.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="bg-neutral-50 border-y">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h2 class="text-2xl md:text-3xl font-bold">Perguntas frequentes</h2>
+        <div class="mt-6 grid grid-cols-1 gap-6">
+          <details class="group p-5 border rounded-lg bg-white">
+            <summary class="flex items-center justify-between cursor-pointer font-semibold select-none">
+              <span>É gratuito?</span>
+              <span class="ml-4 inline-block transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <p class="mt-2 text-neutral-600">Sim, 100% gratuito e sem limites de uso.</p>
+          </details>
+
+          <details class="group p-5 border rounded-lg bg-white">
+            <summary class="flex items-center justify-between cursor-pointer font-semibold select-none">
+              <span>Há upload para servidor?</span>
+              <span class="ml-4 inline-block transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <p class="mt-2 text-neutral-600">Não. Tudo ocorre localmente no seu navegador.</p>
+          </details>
+
+          <details class="group p-5 border rounded-lg bg-white">
+            <summary class="flex items-center justify-between cursor-pointer font-semibold select-none">
+              <span>Quais formatos?</span>
+              <span class="ml-4 inline-block transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <p class="mt-2 text-neutral-600">PNG, JPEG; opcional WebP/AVIF quando suportados.</p>
+          </details>
+
+          <details class="group p-5 border rounded-lg bg-white">
+            <summary class="flex items-center justify-between cursor-pointer font-semibold select-none">
+              <span>Posso personalizar por imagem?</span>
+              <span class="ml-4 inline-block transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <p class="mt-2 text-neutral-600">Sim. Ajustes finos e presets por lote ou item.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 py-14">
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <img src={heroBg} alt="Demonstração de processamento em lote" class="w-full md:w-1/2 h-64 object-cover rounded-lg" />
+        <div class="md:w-1/2">
+          <h2 class="text-2xl md:text-3xl font-bold">Comece em segundos</h2>
+          <p class="mt-2 text-neutral-600">Arraste suas imagens, selecione um preset e exporte. Simples, rápido e com qualidade.</p>
+          <div class="mt-6"><a href="/tools/smart-resize-and-crop" class="bg-neutral-900 text-white px-5 py-3 rounded-md text-sm font-medium">Usar o Smart Resize & Crop agora</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t">
+    <div class="max-w-6xl mx-auto px-4 py-10">
+      <div class="flex items-center gap-3">
+        
+        <span class="font-semibold">BR Tools</span>
+      </div>
+      <nav class="mt-4 flex gap-4 text-sm">
+        <a href="/" class="text-neutral-600">Início</a>
+        <a href="/tools/smart-resize-and-crop" class="text-neutral-600">Ferramenta</a>
+      </nav>
+      <p class="mt-4 text-neutral-600 text-sm">Smart Resize & Crop é uma ferramenta gratuita para preparar imagens com agilidade e qualidade.</p>
+    </div>
+  </footer>
+
+</Layout>

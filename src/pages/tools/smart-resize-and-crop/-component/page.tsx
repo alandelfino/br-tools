@@ -1,10 +1,11 @@
-import { Images } from "lucide-react";
+import { Images, Upload } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { Button } from "@/components/ui/button";
 
 export function Page() {
     return (
-        <div className="w-screen h-screen flex bg-white">
+        <div className="w-screen h-[calc(100vh-66px)] flex bg-white">
 
             {/* Sidebar */}
             <Sidebar />
@@ -18,8 +19,10 @@ export function Page() {
                         <Images className="w-6 h-6 text-neutral-500" />
                     </div>
                     <span className="text-neutral-800 text-lg font-semibold">No images uploaded</span>
-                    <span className="text-neutral-400 text-xs">Upload images from the sidebar to start cropping</span>
-
+                    <span className="text-neutral-400 text-xs">Drag and drop images here or click to upload</span>
+                    <Button className="bg-neutral-800 text-white text-xs px-4 py-2 rounded-md mt-4">
+                        <Upload className="w-4 h-4 mr-2" />Upload Images
+                    </Button>
                 </div>
 
             </div>

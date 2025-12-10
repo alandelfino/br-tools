@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { ChevronsUpDown, Download, Plus, Scissors, Sparkles, Trash, Trash2, User } from "lucide-react";
+import { ChevronsUpDown, Download, ImageUpscale, Plus, Scissors, Sparkles, Trash, Trash2, User } from "lucide-react";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -9,14 +9,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Sidebar() {
     return (
-        <div className="w-[250px] border-r flex flex-col">
+        <div className="w-[270px] border-r flex flex-col">
 
             {/* Logo */}
-            <div className="flex items-center gap-2 h-18 px-4 border-b border-neutral-100">
-                <div className="bg-linear-to-r from-teal-200 to-yellow-200 p-2 rounded-md w-8 h-8 flex items-center justify-center">
-                    <Scissors className="w-4 h-4" />
+            <div className="flex items-center gap-3 p-4">
+                <div className="rounded-xl flex items-center justify-center">
+                    <ImageUpscale className="size-8 text-slate-300" />
                 </div>
-                <span className="text-lg font-bold">BR <span className="bg-linear-to-r from-teal-200 to-yellow-200 bg-clip-text">Cropp</span></span>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold">Smart Resize & Crop</span>
+                    <span className="text-xs text-slate-500">Ease and Fast</span>
+                </div>
             </div>
 
             {/* Settings */}
@@ -30,17 +33,17 @@ export function Sidebar() {
                 <div className="flex justify-between gap-2">
                     <div className="flex flex-col gap-1">
                         <span className="text-xs pl-1">Width</span>
-                        <InputGroup className="bg-neutral-50 h-8">
-                            <InputGroupInput placeholder="0" type="number" className="text-xs" />
-                            <InputGroupAddon align="inline-end">px</InputGroupAddon>
-                        </InputGroup>
+                        <div className="flex relative">
+                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={0.01} placeholder="0" type="number" />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
+                        </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <span className="text-xs pl-1">Height</span>
-                        <InputGroup className="bg-neutral-50 h-8">
-                            <InputGroupInput placeholder="0" type="number" className="text-xs" />
-                            <InputGroupAddon align="inline-end">px</InputGroupAddon>
-                        </InputGroup>
+                        <div className="flex relative">
+                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={0.01} placeholder="0" type="number" />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
+                        </div>
                     </div>
                 </div>
 
@@ -48,7 +51,7 @@ export function Sidebar() {
                 <div className="flex gap-2">
                     <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs pl-1">Zoom Precision</span>
-                        <Input className="bg-neutral-50 w-full h-8 text-xs" placeholder="0,1" defaultValue={0.1} type="number" step={0.01} min={0.1} max={1} />
+                        <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" defaultValue={0.10} type="number" step={0.01} min={0.1} max={1} />
                         <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Lower value = finer control</span>
                     </div>
                 </div>
@@ -57,17 +60,15 @@ export function Sidebar() {
                 <div className="flex gap-4">
                     <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs pl-1">Output Compression</span>
-                        <Select>
-                            <SelectTrigger className="w-full bg-neutral-50 h-8">
-                                <SelectValue placeholder="Select an output quality" />
+                        <Select defaultValue="original">
+                            <SelectTrigger className="bg-neutral-50 h-7! text-xs rounded-md border px-2 w-full">
+                                <SelectValue placeholder="Select" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="original">Original</SelectItem>
-                                    <SelectItem value="low">Low Compression</SelectItem>
-                                    <SelectItem value="medium">Medium Compression</SelectItem>
-                                    <SelectItem value="high">High Compression</SelectItem>
-                                </SelectGroup>
+                            <SelectContent className="bg-neutral-50 text-xs rounded-md border px-1 w-full">
+                                <SelectItem value="original" className="text-xs">Original</SelectItem>
+                                <SelectItem value="low" className="text-xs">Low Compression</SelectItem>
+                                <SelectItem value="medium" className="text-xs">Medium Compression</SelectItem>
+                                <SelectItem value="high" className="text-xs">High Compression</SelectItem>
                             </SelectContent>
                         </Select>
                         <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Reduces file size without visible loss</span>
@@ -76,17 +77,6 @@ export function Sidebar() {
 
                 {/* Separator */}
                 <div className="h-px bg-neutral-100 w-full my-4"></div>
-
-                {/* Row */}
-                <div className="flex gap-4">
-
-                    {/* Add Images */}
-                    <Button variant={"outline"} size={"lg"} className="border border-dashed w-full bg-neutral-50 h-18">
-                        <Plus className="w-4 h-4 text-neutral-500" />
-                        <span className="text-sm text-neutral-500">Add Images</span>
-                    </Button>
-
-                </div>
 
                 {/* Row */}
                 <div className="flex gap-4">
