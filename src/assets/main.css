@@ -131,3 +131,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .scrollbar-modern {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-modern::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-modern::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-modern::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+  }
+  .scrollbar-modern::-webkit-scrollbar-thumb:hover {
+    background-color: var(--input);
+  }
+}

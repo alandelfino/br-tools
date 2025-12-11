@@ -140,20 +140,24 @@ export function Page() {
                 <AuthPromptDialog open={authPromptVisible} onOpenChange={setAuthPromptVisible} />
                 <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
                 {items.length === 0 ? (
-                    <div onDragOver={onDragOver} onDrop={onDrop} className="w-full h-full rounded-lg border-2 border-dashed flex flex-col gap-2 items-center justify-center">
-                        <div className="w-12 h-12 rounded-lg bg-neutral-100 flex items-center justify-center">
-                            <Images className="w-6 h-6 text-neutral-500" />
+                    <div className="w-full h-full rounded-lg flex gap-2 items-center justify-center">
+                        <div onDragOver={onDragOver} onDrop={onDrop} className="flex flex-col border-2 border-dashed p-8 rounded-xl items-center justify-center">
+
+                            <div className="w-12 h-12 rounded-lg bg-neutral-100 flex items-center justify-center">
+                                <Images className="w-6 h-6 text-neutral-500" />
+                            </div>
+                            <span className="text-neutral-800 text-lg font-semibold">No images uploaded</span>
+                            <span className="text-neutral-400 text-xs">Drag and drop images here or click to upload</span>
+                            <Button onClick={openPicker} disabled={isImporting} className="bg-neutral-800 text-white text-xs px-4 py-2 rounded-md mt-4">
+                                <Upload className="w-4 h-4 mr-2" />Upload Images
+                            </Button>
+
                         </div>
-                        <span className="text-neutral-800 text-lg font-semibold">No images uploaded</span>
-                        <span className="text-neutral-400 text-xs">Drag and drop images here or click to upload</span>
-                        <Button onClick={openPicker} disabled={isImporting} className="bg-neutral-800 text-white text-xs px-4 py-2 rounded-md mt-4">
-                            <Upload className="w-4 h-4 mr-2" />Upload Images
-                        </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4 h-full">
                         <div className="flex h-full overflow-hidden">
-                            <div className="w-[110px] shrink-0 overflow-auto">
+                            <div className="w-[110px] shrink-0 overflow-auto scrollbar-modern">
                                 <div className="flex flex-col gap-2 p-3">
                                     {items.map((item) => (
                                         <button
@@ -162,8 +166,44 @@ export function Page() {
                                             className={`w-full rounded-lg border overflow-hidden relative ${selectedId === item.id ? 'border-neutral-800 outline-2 outline-offset-2 ring-offset-2 ring-neutral-800' : 'border-neutral-200 hover:border-neutral-300'}`}
                                         >
                                             <img src={item.url} alt={item.filename} className="w-full h-auto block" />
+                                            {(() => {
+                                                const cap = item.croppedAreaPixels;
+                                                const aspect = cropWidth > 0 && cropHeight > 0 ? cropWidth / cropHeight : 1;
+                                                let x = 0, y = 0, w = 0, h = 0;
+                                                if (cap) {
+                                                    x = cap.x; y = cap.y; w = cap.width; h = cap.height;
+                                                } else {
+                                                    const ow = item.originalWidth, oh = item.originalHeight;
+                                                    const containerAspect = ow / oh;
+                                                    if (containerAspect > aspect) {
+                                                        h = oh; w = h * aspect;
+                                                    } else {
+                                                        w = ow; h = w / aspect;
+                                                    }
+                                                    x = (ow - w) / 2; y = (oh - h) / 2;
+                                                }
+                                                const leftPct = (x / item.originalWidth) * 100;
+                                                const topPct = (y / item.originalHeight) * 100;
+                                                const widthPct = (w / item.originalWidth) * 100;
+                                                const heightPct = (h / item.originalHeight) * 100;
+                                                return (
+                                                    <span
+                                                        className="pointer-events-none"
+                                                        style={{
+                                                            position: 'absolute',
+                                                            left: `${leftPct}%`,
+                                                            top: `${topPct}%`,
+                                                            width: `${widthPct}%`,
+                                                            height: `${heightPct}%`,
+                                                            border: '2px dashed #ffffff',
+                                                            boxShadow: '0 0 0 9999em rgba(0,0,0,0.25)',
+                                                            borderRadius: '4px'
+                                                        }}
+                                                    />
+                                                );
+                                            })()}
                                             {selectedId === item.id && (
-                                                <div className="absolute top-2 right-2 z-50 size-6 flex items-center justify-center bg-white text-neutral-800 text-xs px-1 rounded-md">
+                                                <div className="absolute top-[3px] right-[3px] z-50 size-4 flex items-center justify-center bg-white text-neutral-800 text-xs px-1 rounded-sm">
                                                     <Check className="w-4 h-4" />
                                                 </div>
                                             )}
@@ -171,7 +211,7 @@ export function Page() {
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-auto min-h-0">
+                            <div className="flex-1 overflow-auto min-h-0 scrollbar-modern">
                                 {selectedItem && (
                                     <div className="w-full h-full">
                                         <CropperItem
