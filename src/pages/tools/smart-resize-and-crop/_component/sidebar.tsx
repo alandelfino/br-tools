@@ -63,7 +63,7 @@ export function Sidebar({
                 <div className="flex gap-2">
                     <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs pl-1">Zoom Precision</span>
-                        <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" type="number" step={0.01} min={0.01} max={1} value={Number.isFinite(zoomPrecision) ? zoomPrecision : 0.1} onChange={(e) => onChangeZoomPrecision(parseFloat(e.target.value || '0.1'))} />
+                        <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" type="number" step={0.01} min={0.01} max={1} value={Number.isFinite(zoomPrecision) ? zoomPrecision : 0.06} onChange={(e) => onChangeZoomPrecision(parseFloat(e.target.value || '0.1'))} />
                         <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Lower value = finer control</span>
                     </div>
                 </div>
@@ -89,10 +89,10 @@ export function Sidebar({
                 <div className="h-px bg-neutral-100 w-full my-4"></div>
 
                 <div className="flex gap-4">
-                    <Button size={"lg"} className="bg-linear-to-r from-rose-400 to-pink-400 w-full">
-                        <Sparkles className="w-4 h-4 text-white" />
-                        <span className="text-sm text-white">Auto Smart Ajust</span>
-                        <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Breve</span>
+                    <Button size={"lg"} className="bg-linear-to-r from-teal-200 to-yellow-200 w-full">
+                        <Sparkles className="w-4 h-4 text-slate-600" />
+                        <span className="text-sm text-slate-600">Auto Smart Ajust</span>
+                        <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Soon</span>
                     </Button>
                 </div>
 

@@ -17,9 +17,9 @@ export function Page() {
     const [isImporting, setIsImporting] = useState(false);
     const [importTotal, setImportTotal] = useState(0);
     const [importDone, setImportDone] = useState(0);
-    const [cropWidth, setCropWidth] = useState<number>(500);
-    const [cropHeight, setCropHeight] = useState<number>(500);
-    const [zoomPrecision, setZoomPrecision] = useState<number>(0.10);
+    const [cropWidth, setCropWidth] = useState<number>(580);
+    const [cropHeight, setCropHeight] = useState<number>(870);
+    const [zoomPrecision, setZoomPrecision] = useState<number>(0.06);
     const [outputCompression, setOutputCompression] = useState<'original' | 'low' | 'medium' | 'high'>('original');
 
     const createImageItem = (file: File): Promise<ImageItem | null> => {

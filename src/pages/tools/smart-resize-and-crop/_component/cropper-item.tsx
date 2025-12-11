@@ -192,15 +192,15 @@ export const CropperItem: React.FC<CropperItemProps> = ({
       <div className="flex-none bg-white p-3 flex justify-between items-center border-b border-gray-100 z-20">
          <span className="text-xs font-medium text-gray-700 truncate" title={item.filename}>{item.filename}</span>
          <DropdownMenu>
-           <DropdownMenuTrigger asChild>
-             <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" title="Opções">
-               <MoreVertical className="w-4 h-4" />
-             </button>
-           </DropdownMenuTrigger>
-           <DropdownMenuContent align="end" className="w-32">
-             <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">Remover</DropdownMenuItem>
-           </DropdownMenuContent>
-         </DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" title="Options">
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">Remove</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Cropper Container - Takes remaining space */}
@@ -247,11 +247,11 @@ export const CropperItem: React.FC<CropperItemProps> = ({
         <div className="flex-1 grid grid-cols-2 gap-4">
           <div className="flex flex-col">
             <span className="text-[10px] text-neutral-500">Original</span>
-            <span className="text-[11px]">Resolução: {item.originalWidth} x {item.originalHeight}</span>
-            <span className="text-[11px]">Tamanho: {item.originalSizeBytes ? (item.originalSizeBytes >= 1048576 ? `${(item.originalSizeBytes/1048576).toFixed(2).replace('.', ',')} Mb` : `${(item.originalSizeBytes/1024).toFixed(2).replace('.', ',')} Kb`) : "-"}</span>
+            <span className="text-[11px]">Resolution: {item.originalWidth} x {item.originalHeight}</span>
+            <span className="text-[11px]">Size: {item.originalSizeBytes ? (item.originalSizeBytes >= 1048576 ? `${(item.originalSizeBytes/1048576).toFixed(2).replace('.', ',')} Mb` : `${(item.originalSizeBytes/1024).toFixed(2).replace('.', ',')} Kb`) : "-"}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] text-neutral-500">Saída</span>
+            <span className="text-[10px] text-neutral-500">Output</span>
             <span className="text-[11px]">{cropSize ? `${cropSize.width} x ${cropSize.height}` : "-"}</span>
             <span className="text-[11px]">
               {(() => {
