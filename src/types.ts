@@ -27,6 +27,7 @@ export interface ImageItem {
     url: string;
     originalWidth: number;
     originalHeight: number;
+    originalSizeBytes?: number;
     filename: string;
     // Store crop state per image
     crop: Point;

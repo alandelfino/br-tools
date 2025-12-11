@@ -7,7 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export function Sidebar() {
+export function Sidebar({
+    cropWidth,
+    cropHeight,
+    onChangeCropWidth,
+    onChangeCropHeight,
+    zoomPrecision,
+    onChangeZoomPrecision,
+    outputCompression,
+    onChangeOutputCompression,
+}: {
+    cropWidth: number;
+    cropHeight: number;
+    onChangeCropWidth: (value: number) => void;
+    onChangeCropHeight: (value: number) => void;
+    zoomPrecision: number;
+    onChangeZoomPrecision: (value: number) => void;
+    outputCompression: 'original' | 'low' | 'medium' | 'high';
+    onChangeOutputCompression: (value: 'original' | 'low' | 'medium' | 'high') => void;
+}) {
     return (
         <div className="w-[270px] border-r flex flex-col">
 
@@ -31,14 +49,14 @@ export function Sidebar() {
                     <div className="flex flex-col gap-1">
                         <span className="text-xs pl-1">Width</span>
                         <div className="flex relative">
-                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={0.01} placeholder="0" type="number" />
+                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={1} placeholder="0" type="number" value={Number.isFinite(cropWidth) ? cropWidth : 0} onChange={(e) => onChangeCropWidth(parseInt(e.target.value || '0', 10))} />
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <span className="text-xs pl-1">Height</span>
                         <div className="flex relative">
-                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={0.01} placeholder="0" type="number" />
+                            <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={1} placeholder="0" type="number" value={Number.isFinite(cropHeight) ? cropHeight : 0} onChange={(e) => onChangeCropHeight(parseInt(e.target.value || '0', 10))} />
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
                         </div>
                     </div>
@@ -47,7 +65,7 @@ export function Sidebar() {
                 <div className="flex gap-2">
                     <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs pl-1">Zoom Precision</span>
-                        <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" defaultValue={0.10} type="number" step={0.01} min={0.1} max={1} />
+                        <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" type="number" step={0.01} min={0.1} max={1} value={Number.isFinite(zoomPrecision) ? zoomPrecision : 0.1} onChange={(e) => onChangeZoomPrecision(parseFloat(e.target.value || '0.1'))} />
                         <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Lower value = finer control</span>
                     </div>
                 </div>
@@ -55,7 +73,7 @@ export function Sidebar() {
                 <div className="flex gap-4">
                     <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs pl-1">Output Compression</span>
-                        <Select defaultValue="original">
+                        <Select value={outputCompression} onValueChange={(v) => onChangeOutputCompression(v as 'original' | 'low' | 'medium' | 'high')}>
                             <SelectTrigger className="bg-neutral-50 h-7! text-xs rounded-md border px-2 w-full">
                                 <SelectValue placeholder="Select" />
                             </SelectTrigger>
@@ -124,4 +142,3 @@ export function Sidebar() {
         </div>
     )
 }
-

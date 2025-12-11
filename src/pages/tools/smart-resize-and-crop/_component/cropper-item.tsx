@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, ImageItem, Point } from '../../../../types';
-import { X, Minus, Plus } from 'lucide-react';
+import { Minus, Plus, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface CropperItemProps {
   item: ImageItem;
   targetAspect: number;
+  cropSize?: { width: number; height: number };
   zoomSpeed?: number;
+  compressionLevel?: 'original' | 'low' | 'medium' | 'high';
   onCropChange: (id: string, crop: Point) => void;
   onZoomChange: (id: string, zoom: number) => void;
   onCropComplete: (id: string, croppedArea: Area, croppedAreaPixels: Area) => void;
@@ -16,7 +19,9 @@ interface CropperItemProps {
 export const CropperItem: React.FC<CropperItemProps> = ({
   item,
   targetAspect,
+  cropSize,
   zoomSpeed = 0.1,
+  compressionLevel = 'original',
   onCropChange,
   onZoomChange,
   onCropComplete,
@@ -24,6 +29,8 @@ export const CropperItem: React.FC<CropperItemProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [effectiveCropSize, setEffectiveCropSize] = useState<{ width: number; height: number } | undefined>(undefined);
+  const [minZoom, setMinZoom] = useState<number>(1);
 
   // Maximum zoom level allowed.
   const MAX_ZOOM = 10;
@@ -61,6 +68,41 @@ export const CropperItem: React.FC<CropperItemProps> = ({
   const handleCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     onCropComplete(item.id, croppedArea, croppedAreaPixels);
   }, [item.id, onCropComplete]);
+
+  useEffect(() => {
+    const calc = () => {
+      if (!containerRef.current || !cropSize) { setEffectiveCropSize(undefined); return; }
+      const rect = containerRef.current.getBoundingClientRect();
+      const Wc = rect.width;
+      const Hc = rect.height;
+      const r = Math.min(Wc / cropSize.width, Hc / cropSize.height, 1);
+      setEffectiveCropSize({ width: Math.floor(cropSize.width * r), height: Math.floor(cropSize.height * r) });
+    };
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, [cropSize]);
+
+  useEffect(() => {
+    if (!containerRef.current || !effectiveCropSize) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const Wc = rect.width;
+    const Hc = rect.height;
+    const aspect_c = Wc / Hc;
+    const aspect_img = item.originalWidth / item.originalHeight;
+    let W_img_0: number, H_img_0: number;
+    if (aspect_img > aspect_c) {
+      W_img_0 = Wc;
+      H_img_0 = Wc / aspect_img;
+    } else {
+      H_img_0 = Hc;
+      W_img_0 = Hc * aspect_img;
+    }
+    const minZ = Math.max(effectiveCropSize.width / W_img_0, effectiveCropSize.height / H_img_0, 1);
+    setMinZoom(minZ);
+    if (item.zoom < minZ) onZoomChange(item.id, minZ);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCropSize]);
 
   // Intelligent Auto-Crop: Calculates Center AND Ideal Zoom
   useEffect(() => {
@@ -142,22 +184,23 @@ export const CropperItem: React.FC<CropperItemProps> = ({
 
   return (
     <div 
-      className="flex flex-col bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200 group h-[500px]"
+      className="flex flex-col bg-white overflow-hidden border-l group w-full h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Header Info - Light Theme */}
       <div className="flex-none bg-white p-3 flex justify-between items-center border-b border-gray-100 z-20">
-         <span className="text-xs font-mono font-medium text-gray-500">
-           Original: <span className="text-gray-900">{item.originalWidth} x {item.originalHeight}</span>
-         </span>
-         <button 
-           onClick={() => onRemove(item.id)}
-           className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-md transition-colors"
-           title="Remove image"
-         >
-           <X className="w-4 h-4" />
-         </button>
+         <span className="text-xs font-medium text-gray-700 truncate" title={item.filename}>{item.filename}</span>
+         <DropdownMenu>
+           <DropdownMenuTrigger asChild>
+             <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" title="Opções">
+               <MoreVertical className="w-4 h-4" />
+             </button>
+           </DropdownMenuTrigger>
+           <DropdownMenuContent align="end" className="w-32">
+             <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">Remover</DropdownMenuItem>
+           </DropdownMenuContent>
+         </DropdownMenu>
       </div>
 
       {/* Cropper Container - Takes remaining space */}
@@ -167,6 +210,9 @@ export const CropperItem: React.FC<CropperItemProps> = ({
           crop={item.crop}
           zoom={item.zoom}
           aspect={targetAspect}
+          cropSize={effectiveCropSize}
+          restrictPosition
+          minZoom={minZoom}
           onCropChange={handleCropChange}
           onZoomChange={handleZoomChange}
           onCropComplete={handleCropComplete}
@@ -198,9 +244,34 @@ export const CropperItem: React.FC<CropperItemProps> = ({
       
       {/* Footer - Light Theme with Zoom Controls */}
       <div className="flex-none bg-white p-3 border-t border-gray-100 z-20 flex justify-between items-center gap-4">
-        <p className="text-gray-600 text-xs truncate font-medium flex-1" title={item.filename}>
-          {item.filename}
-        </p>
+        <div className="flex-1 grid grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-neutral-500">Original</span>
+            <span className="text-[11px]">Resolução: {item.originalWidth} x {item.originalHeight}</span>
+            <span className="text-[11px]">Tamanho: {item.originalSizeBytes ? (item.originalSizeBytes >= 1048576 ? `${(item.originalSizeBytes/1048576).toFixed(2).replace('.', ',')} Mb` : `${(item.originalSizeBytes/1024).toFixed(2).replace('.', ',')} Kb`) : "-"}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-neutral-500">Saída</span>
+            <span className="text-[11px]">{cropSize ? `${cropSize.width} x ${cropSize.height}` : "-"}</span>
+            <span className="text-[11px]">
+              {(() => {
+                const ow = item.originalWidth;
+                const oh = item.originalHeight;
+                const ob = item.originalSizeBytes || 0;
+                const cw = cropSize?.width || 0;
+                const ch = cropSize?.height || 0;
+                if (!ob || !ow || !oh || !cw || !ch) return "-";
+                const ratio = (cw * ch) / (ow * oh);
+                const factor = compressionLevel === 'original' ? 1 : compressionLevel === 'low' ? 0.8 : compressionLevel === 'medium' ? 0.6 : 0.4;
+                const est = Math.max(1, Math.round(ob * ratio * factor));
+                const txt = est >= 1048576 ? `${(est/1048576).toFixed(2).replace('.', ',')} Mb` : `${(est/1024).toFixed(2).replace('.', ',')} Kb`;
+                const red = Math.max(0, 100 * (1 - est / ob));
+                const redTxt = red.toFixed(2).replace('.', ',');
+                return `${txt} ( - ${redTxt} % )`;
+              })()}
+            </span>
+          </div>
+        </div>
 
         <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
           <button 

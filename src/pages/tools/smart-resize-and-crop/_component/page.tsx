@@ -1,17 +1,26 @@
-import { Images, Upload } from "lucide-react";
+import { Check, Images, Plus, Upload } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "./login-form";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { useCallback, useRef, useState } from "react";
 import { CropperItem } from "./cropper-item";
 import type { ImageItem, Area, Point } from "@/types";
 import { FieldSeparator } from "@/components/ui/field";
+import { ImportProgressDialog } from "./import-progress-dialog";
+import { AuthPromptDialog } from "./auth-prompt-dialog";
 
 export function Page() {
     const [items, setItems] = useState<ImageItem[]>([]);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [authPromptVisible, setAuthPromptVisible] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const [importTotal, setImportTotal] = useState(0);
+    const [importDone, setImportDone] = useState(0);
+    const [cropWidth, setCropWidth] = useState<number>(500);
+    const [cropHeight, setCropHeight] = useState<number>(500);
+    const [zoomPrecision, setZoomPrecision] = useState<number>(0.10);
+    const [outputCompression, setOutputCompression] = useState<'original' | 'low' | 'medium' | 'high'>('original');
 
     const createImageItem = (file: File): Promise<ImageItem | null> => {
         return new Promise((resolve) => {
@@ -23,6 +32,7 @@ export function Page() {
                     url,
                     originalWidth: img.naturalWidth,
                     originalHeight: img.naturalHeight,
+                    originalSizeBytes: file.size,
                     filename: file.name,
                     crop: { x: 0, y: 0 },
                     zoom: 1,
@@ -43,9 +53,23 @@ export function Page() {
             setAuthPromptVisible(true);
             return;
         }
-        const created = await Promise.all(fileArray.map(createImageItem));
+        if (fileArray.length === 0) return;
+        setIsImporting(true);
+        setImportTotal(fileArray.length);
+        setImportDone(0);
+        const created = await Promise.all(
+            fileArray.map(async (f) => {
+                const res = await createImageItem(f);
+                setImportDone((d) => d + 1);
+                return res;
+            })
+        );
         const filtered = created.filter((i): i is ImageItem => i !== null);
         setItems((prev) => [...prev, ...filtered]);
+        if (!selectedId && filtered.length > 0) {
+            setSelectedId(filtered[0].id);
+        }
+        setIsImporting(false);
     }, []);
 
     const openPicker = useCallback(() => {
@@ -87,43 +111,33 @@ export function Page() {
         setItems((prev) => {
             const target = prev.find((i) => i.id === id);
             if (target) URL.revokeObjectURL(target.url);
-            return prev.filter((it) => it.id !== id);
+            const next = prev.filter((it) => it.id !== id);
+            return next;
         });
     }, []);
 
+    const selectedItem = selectedId ? items.find((i) => i.id === selectedId) || null : null;
+
+    if (selectedId && !items.find((i) => i.id === selectedId)) {
+        const first = items[0]?.id ?? null;
+        if (first !== selectedId) setSelectedId(first);
+    }
+
     return (
         <div className="w-screen h-[calc(100vh-66px)] flex bg-white">
-            <Sidebar />
-            <div className="flex-1 p-8 bg-neutral-50">
-                <Dialog open={authPromptVisible} onOpenChange={setAuthPromptVisible}>
-                    <DialogContent className="w-[400px]" showCloseButton={false}>
-                        <div className="flex flex-col gap-2 items-center">
-                            <div className="text-lg font-bold text-center">Oops, you need to log in!</div>
-                            <p className="text-center text-sm text-muted-foreground">
-                                To upload more than 10 images, you need to log in, but don't worry, it's <span className="font-bold">free!</span>
-                            </p>
-                        </div>
-                        <LoginForm />
-                        <FieldSeparator className="my-2 text-xs">Or continue with</FieldSeparator>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" className="text-xs w-full">
-                                <img src="/icons/google.svg" className="w-4 h-4 mr-2" alt="Google" />
-                                Google
-                            </Button>
-                            <Button variant="outline" className="text-xs w-full">
-                                <img src="/icons/facebook.svg" className="w-4 h-4 mr-2" alt="Facebook" />
-                                Facebook
-                            </Button>
-                            <Button variant="outline" className="text-xs w-full col-span-2">
-                                <img src="/icons/github.svg" className="w-4 h-4 mr-2" alt="GitHub" />
-                                GitHub
-                            </Button>
-                        </div>
-                        <DialogClose asChild>
-                            <Button variant="ghost" className="mt-4 text-xs">I will send only 10 images</Button>
-                        </DialogClose>
-                    </DialogContent>
-                </Dialog>
+            <Sidebar
+                cropWidth={cropWidth}
+                cropHeight={cropHeight}
+                onChangeCropWidth={setCropWidth}
+                onChangeCropHeight={setCropHeight}
+                zoomPrecision={zoomPrecision}
+                onChangeZoomPrecision={setZoomPrecision}
+                outputCompression={outputCompression}
+                onChangeOutputCompression={setOutputCompression}
+            />
+            <div className="flex-1 bg-neutral-50">
+                <ImportProgressDialog open={isImporting} importDone={importDone} importTotal={importTotal} />
+                <AuthPromptDialog open={authPromptVisible} onOpenChange={setAuthPromptVisible} />
                 <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
                 {items.length === 0 ? (
                     <div onDragOver={onDragOver} onDrop={onDrop} className="w-full h-full rounded-lg border-2 border-dashed flex flex-col gap-2 items-center justify-center">
@@ -132,31 +146,49 @@ export function Page() {
                         </div>
                         <span className="text-neutral-800 text-lg font-semibold">No images uploaded</span>
                         <span className="text-neutral-400 text-xs">Drag and drop images here or click to upload</span>
-                        <Button onClick={openPicker} className="bg-neutral-800 text-white text-xs px-4 py-2 rounded-md mt-4">
+                        <Button onClick={openPicker} disabled={isImporting} className="bg-neutral-800 text-white text-xs px-4 py-2 rounded-md mt-4">
                             <Upload className="w-4 h-4 mr-2" />Upload Images
                         </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4 h-full">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-neutral-600">{items.length} images</span>
-                            <Button onClick={openPicker} variant="outline" className="text-xs">
-                                <Upload className="w-4 h-4 mr-2" />Add more
-                            </Button>
-                        </div>
-                        <div className="grid xl:grid-cols-3 gap-6 overflow-auto pr-1">
-                            {items.map((item) => (
-                                <CropperItem
-                                    key={item.id}
-                                    item={item}
-                                    targetAspect={1}
-                                    zoomSpeed={0.1}
-                                    onCropChange={onCropChange}
-                                    onZoomChange={onZoomChange}
-                                    onCropComplete={onCropComplete}
-                                    onRemove={onRemove}
-                                />
-                            ))}
+                        <div className="flex h-full overflow-hidden">
+                            <div className="w-[110px] shrink-0 overflow-auto">
+                                <div className="flex flex-col gap-2 p-3">
+                                    {items.map((item) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setSelectedId(item.id)}
+                                            className={`w-full rounded-lg border overflow-hidden relative ${selectedId === item.id ? 'border-neutral-800 outline-2 outline-offset-2 ring-offset-2 ring-neutral-800' : 'border-neutral-200 hover:border-neutral-300'}`}
+                                        >
+                                            <img src={item.url} alt={item.filename} className="w-full h-auto block" />
+                                            {selectedId === item.id && (
+                                                <div className="absolute top-2 right-2 z-50 size-6 flex items-center justify-center bg-white text-neutral-800 text-xs px-1 rounded-md">
+                                                    <Check className="w-4 h-4" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-auto min-h-0">
+                                {selectedItem && (
+                                    <div className="w-full h-full">
+                                        <CropperItem
+                                            key={selectedItem.id}
+                                            item={selectedItem}
+                                            targetAspect={cropWidth > 0 && cropHeight > 0 ? cropWidth / cropHeight : 1}
+                                        zoomSpeed={zoomPrecision}
+                                            onCropChange={onCropChange}
+                                            onZoomChange={onZoomChange}
+                                            onCropComplete={onCropComplete}
+                                            onRemove={onRemove}
+                                            cropSize={{ width: cropWidth, height: cropHeight }}
+                                            compressionLevel={outputCompression}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
