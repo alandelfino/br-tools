@@ -14,6 +14,14 @@ export function Sidebar({
     onChangeZoomPrecision,
     outputCompression,
     onChangeOutputCompression,
+    onClearAll,
+    hasItems,
+    onDownloadAll,
+    downloadDisabled,
+    outputFormat,
+    onChangeOutputFormat,
+    jpegBgColor,
+    onChangeJpegBgColor,
 }: {
     cropWidth: number;
     cropHeight: number;
@@ -23,9 +31,17 @@ export function Sidebar({
     onChangeZoomPrecision: (value: number) => void;
     outputCompression: 'original' | 'low' | 'medium' | 'high';
     onChangeOutputCompression: (value: 'original' | 'low' | 'medium' | 'high') => void;
+    onClearAll: () => void;
+    hasItems: boolean;
+    onDownloadAll: () => void;
+    downloadDisabled: boolean;
+    outputFormat: 'jpeg' | 'png';
+    onChangeOutputFormat: (value: 'jpeg' | 'png') => void;
+    jpegBgColor: string;
+    onChangeJpegBgColor: (value: string) => void;
 }) {
     return (
-        <div className="w-[270px] border-r flex flex-col">
+        <div className="w-[270px] h-full bg-slate-50 flex flex-col overflow-auto scrollbar-modern">
 
             <div className="flex items-center gap-3 p-4">
                 <div className="rounded-xl flex items-center justify-center">
@@ -86,29 +102,59 @@ export function Sidebar({
                     </div>
                 </div>
 
+                <div className="flex gap-4">
+                    <div className="flex flex-col gap-1 w-full">
+                        <span className="text-xs pl-1">Output Format</span>
+                        <Select value={outputFormat} onValueChange={(v) => onChangeOutputFormat(v as 'jpeg' | 'png')}>
+                            <SelectTrigger className="bg-neutral-50 h-7! text-xs rounded-md border px-2 w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-neutral-50 text-xs rounded-md border px-1 w-full">
+                                <SelectItem value="jpeg" className="text-xs">JPEG</SelectItem>
+                                <SelectItem value="png" className="text-xs">PNG</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span className="text-muted-foreground/50 text-[0.6rem] pl-1">PNG mantém transparências</span>
+                    </div>
+                </div>
+
+                {outputFormat === 'jpeg' && (
+                    <div className="flex gap-4">
+                        <div className="flex flex-col gap-1 w-full">
+                            <span className="text-xs pl-1">JPEG Background</span>
+                            <Input type="color" className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" value={jpegBgColor} onChange={(e) => onChangeJpegBgColor(e.target.value)} />
+                            <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Usado para áreas transparentes</span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="h-px bg-neutral-100 w-full my-4"></div>
 
-                <div className="flex gap-4">
-                    <Button size={"lg"} className="bg-linear-to-r from-teal-200 to-yellow-200 w-full">
-                        <Sparkles className="w-4 h-4 text-slate-600" />
-                        <span className="text-sm text-slate-600">Auto Smart Ajust</span>
-                        <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Soon</span>
-                    </Button>
-                </div>
+                {hasItems && (
+                    <>
+                        <div className="flex gap-4">
+                            <Button size={"lg"} className="bg-linear-to-r from-teal-200 to-yellow-200 w-full">
+                                <Sparkles className="w-4 h-4 text-slate-600" />
+                                <span className="text-sm text-slate-600">Auto Smart Ajust</span>
+                                <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Soon</span>
+                            </Button>
+                        </div>
 
-                <div className="flex gap-4">
-                    <Button size={"lg"} className="w-full">
-                        <Download className="w-4 h-4 text-white" />
-                        <span className="text-sm text-white">Crop & Download All</span>
-                    </Button>
-                </div>
+                        <div className="flex gap-4">
+                            <Button size={"lg"} className="w-full" onClick={onDownloadAll} disabled={downloadDisabled}>
+                                <Download className="w-4 h-4 text-white" />
+                                <span className="text-sm text-white">Crop & Download All</span>
+                            </Button>
+                        </div>
 
-                <div className="flex gap-4">
-                    <Button variant={"ghost"} size={"lg"} className="w-full text-red-400 hover:text-red-500">
-                        <Trash2 className="w-4 h-4" />
-                        <span className="text-xs">Clear All</span>
-                    </Button>
-                </div>
+                        <div className="flex gap-4">
+                            <Button variant={"ghost"} size={"lg"} className="w-full text-red-400 hover:text-red-500" onClick={onClearAll}>
+                                <Trash2 className="w-4 h-4" />
+                                <span className="text-xs">Clear All</span>
+                            </Button>
+                        </div>
+                    </>
+                )}
 
             </div>
 

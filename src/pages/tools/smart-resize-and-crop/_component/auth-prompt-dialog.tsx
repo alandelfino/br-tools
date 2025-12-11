@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "./login-form";
 import { FieldSeparator } from "@/components/ui/field";
@@ -8,12 +8,10 @@ export function AuthPromptDialog({ open, onOpenChange }: { open: boolean; onOpen
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[400px]" showCloseButton={false}>
-        <div className="flex flex-col gap-2 items-center">
-          <div className="text-lg font-bold text-center">Oops, you need to log in!</div>
-          <p className="text-center text-sm text-muted-foreground">
-            To upload more than 10 images, you need to log in, but don't worry, it's <span className="font-bold">free!</span>
-          </p>
-        </div>
+        <DialogTitle>Oops, you need to log in!</DialogTitle>
+        <DialogDescription>
+          To upload more than 10 images, you need to log in, but don't worry, it's <span className="font-bold">free!</span>
+        </DialogDescription>
         <LoginForm />
         <FieldSeparator className="my-2 text-xs">Or continue with</FieldSeparator>
         <div className="grid grid-cols-2 gap-2">
@@ -37,4 +35,3 @@ export function AuthPromptDialog({ open, onOpenChange }: { open: boolean; onOpen
     </Dialog>
   );
 }
-

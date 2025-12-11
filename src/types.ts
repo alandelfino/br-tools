@@ -28,6 +28,9 @@ export interface ImageItem {
     originalWidth: number;
     originalHeight: number;
     originalSizeBytes?: number;
+    thumbUrl?: string;
+    thumbWidth?: number;
+    thumbHeight?: number;
     filename: string;
     // Store crop state per image
     crop: Point;
