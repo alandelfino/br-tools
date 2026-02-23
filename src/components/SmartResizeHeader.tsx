@@ -29,8 +29,9 @@ export function SmartResizeHeader({ zipName, onZipNameChange }: SmartResizeHeade
       <div className="px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex gap-2 items-center">
+            <span className="text-sm text-slate-700">Grupo</span>
             <span className="text-lg text-slate-700 font-bold">TITANIUM</span>
-            <span className="text-xs text-slate-500">All Crop</span>
+            <span className="text-xs text-slate-500">Ferramentas digitais</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
