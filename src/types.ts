@@ -24,6 +24,7 @@ export interface BoundingBox {
 
 export interface ImageItem {
     id: string;
+    baseId?: string;
     url: string;
     originalWidth: number;
     originalHeight: number;

@@ -18,6 +18,7 @@ interface CropperItemProps {
   onCropComplete: (id: string, croppedArea: Area, croppedAreaPixels: Area) => void;
   onRemove: (id: string) => void;
   onRename: (id: string, newBaseName: string) => boolean;
+  onDuplicate: (id: string) => void;
 }
 
 export const CropperItem: React.FC<CropperItemProps> = ({
@@ -32,7 +33,8 @@ export const CropperItem: React.FC<CropperItemProps> = ({
   onZoomChange,
   onCropComplete,
   onRemove,
-  onRename
+  onRename,
+  onDuplicate
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -43,6 +45,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
   const [nameError, setNameError] = useState("");
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [estimatedBytes, setEstimatedBytes] = useState<number | null>(null);
+  const [zoomInput, setZoomInput] = useState<string>(() => Math.round(item.zoom * 100).toString());
 
   // Maximum zoom level allowed.
   const MAX_ZOOM = 10;
@@ -64,16 +67,19 @@ export const CropperItem: React.FC<CropperItemProps> = ({
   };
 
   const handleManualZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = parseFloat(e.target.value);
+    const raw = e.target.value;
+    const cleaned = raw.replace(/[^\d]/g, "");
+    setZoomInput(cleaned);
+  };
+
+  const commitZoomFromInput = () => {
+    const text = zoomInput.trim();
+    if (!text) return;
+    const val = parseFloat(text);
     if (isNaN(val)) return;
-    
-    // Convert integer percentage (e.g., 150) to zoom value (1.5)
     let zoomVal = val / 100;
-    
-    // Clamp
     if (zoomVal < minZoom) zoomVal = minZoom;
     if (zoomVal > MAX_ZOOM) zoomVal = MAX_ZOOM;
-
     onZoomChange(item.id, zoomVal);
   };
 
@@ -126,6 +132,10 @@ export const CropperItem: React.FC<CropperItemProps> = ({
     img.src = item.url;
     return () => { cancelled = true; };
   }, [item.url]);
+
+  useEffect(() => {
+    setZoomInput(Math.round(item.zoom * 100).toString());
+  }, [item.zoom]);
 
   const qualityForCompression = (level: 'original' | 'low' | 'medium' | 'high'): number => {
     switch (level) {
@@ -335,12 +345,16 @@ export const CropperItem: React.FC<CropperItemProps> = ({
             </button>
             <div className="relative w-12">
               <input 
-                type="number"
-                min={Math.round(minZoom * 100)}
-                max={MAX_ZOOM * 100}
-                step="1"
-                value={Math.round(item.zoom * 100)}
+                type="text"
+                inputMode="numeric"
+                value={zoomInput}
                 onChange={handleManualZoomChange}
+                onBlur={commitZoomFromInput}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.currentTarget.blur();
+                  }
+                }}
                 className="w-full text-center text-[10px] font-mono text-gray-600 bg-transparent focus:bg-white focus:ring-2 focus:ring-indigo-100 outline-none rounded px-1 transition-all"
               />
               <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[8px] text-gray-400 pointer-events-none pr-1">%</span>
@@ -432,8 +446,22 @@ export const CropperItem: React.FC<CropperItemProps> = ({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-32">
-                <DropdownMenuItem onClick={() => { const base = item.filename.replace(/\.[^.]+$/, ""); setNameInput(base); setIsEditingName(true); setNameError(""); }}>Rename</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">Remove</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const base = item.filename.replace(/\.[^.]+$/, "");
+                    setNameInput(base);
+                    setIsEditingName(true);
+                    setNameError("");
+                  }}
+                >
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDuplicate(item.id)}>
+                  Adicionar variação
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">
+                  Remove
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -1,21 +1,125 @@
-import { Check, Images, Plus, Upload } from "lucide-react";
+import { Check, Images, Plus, Upload, GripVertical } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { Button } from "@/components/ui/button";
-import { LoginForm } from "./login-form";
 import { useCallback, useRef, useState, useEffect, useMemo } from "react";
 import { CropperItem } from "./cropper-item";
 import type { ImageItem, Area, Point } from "@/types";
-import { FieldSeparator } from "@/components/ui/field";
 import { ImportProgressDialog } from "./import-progress-dialog";
-import { AuthPromptDialog } from "./auth-prompt-dialog";
 import JSZip from "jszip";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, useSortable, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-export function Page() {
+type SortableThumbnailProps = {
+    item: ImageItem;
+    isSelected: boolean;
+    onSelect: () => void;
+    cropWidth: number;
+    cropHeight: number;
+};
+
+function SortableThumbnail({ item, isSelected, onSelect, cropWidth, cropHeight }: SortableThumbnailProps) {
+    const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    const CW = 100, CH = 100;
+    const ow = item.originalWidth, oh = item.originalHeight;
+    const cap = item.croppedAreaPixels || (() => {
+        const aspect = cropWidth > 0 && cropHeight > 0 ? cropWidth / cropHeight : 1;
+        let w = 0, h = 0;
+        if (ow / oh > aspect) { h = oh; w = h * aspect; } else { w = ow; h = w / aspect; }
+        const x = (ow - w) / 2; const y = (oh - h) / 2;
+        return { x, y, width: w, height: h } as Area;
+    })();
+    const aspectImg = ow / oh;
+    let dispW = CW, dispH = CH, offsetX = 0, offsetY = 0;
+    if (aspectImg > (CW / CH)) {
+        dispW = CW; dispH = Math.round(CW / aspectImg); offsetY = Math.round((CH - dispH) / 2);
+    } else {
+        dispH = CH; dispW = Math.round(CH * aspectImg); offsetX = Math.round((CW - dispW) / 2);
+    }
+    const scaleX = dispW / ow; const scaleY = dispH / oh;
+    const leftPx = offsetX + Math.round(cap.x * scaleX);
+    const topPx = offsetY + Math.round(cap.y * scaleY);
+    const widthPx = Math.round(cap.width * scaleX);
+    const heightPx = Math.round(cap.height * scaleY);
+
+    const clamp = (v: number) => Math.max(0, Math.min(v, 100));
+    const l = clamp(leftPx);
+    const t = clamp(topPx);
+    const w = clamp(widthPx);
+    const h = clamp(heightPx);
+    const r = clamp(l + w);
+    const b = clamp(t + h);
+
+    return (
+        <button
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            onClick={onSelect}
+            className={`w-[100px] h-[100px] shrink-0 rounded-lg border overflow-hidden relative transition-transform duration-150 ease-out ${isSelected ? 'border-neutral-800 outline-2 outline-offset-2 ring-offset-2 ring-neutral-800' : 'border-neutral-200 hover:border-neutral-300 hover:-translate-y-0.5'} ${isDragging ? 'z-10 shadow-lg scale-95' : ''}`}
+        >
+            <div
+                ref={setActivatorNodeRef}
+                {...listeners}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute left-1 top-1 z-20 w-4 h-4 rounded-full bg-white/80 border border-neutral-300 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sm"
+            >
+                <GripVertical className="w-3 h-3 text-neutral-500" />
+            </div>
+            <img src={item.thumbUrl || item.url} alt={item.filename} className="w-full h-full object-contain block" />
+            <>
+                <span
+                    className="pointer-events-none"
+                    style={{
+                        position: 'absolute',
+                        left: `${l}px`,
+                        top: `${t}px`,
+                        width: `${w}px`,
+                        height: `${h}px`,
+                        border: '2px dashed #ffffff',
+                        borderRadius: '4px'
+                    }}
+                />
+                <span
+                    className="pointer-events-none"
+                    style={{ position: 'absolute', left: 0, top: 0, width: '100px', height: `${t}px`, background: 'rgba(0,0,0,0.25)' }}
+                />
+                <span
+                    className="pointer-events-none"
+                    style={{ position: 'absolute', left: 0, top: `${t}px`, width: `${l}px`, height: `${h}px`, background: 'rgba(0,0,0,0.25)' }}
+                />
+                <span
+                    className="pointer-events-none"
+                    style={{ position: 'absolute', left: `${r}px`, top: `${t}px`, width: `${100 - r}px`, height: `${h}px`, background: 'rgba(0,0,0,0.25)' }}
+                />
+                <span
+                    className="pointer-events-none"
+                    style={{ position: 'absolute', left: 0, top: `${b}px`, width: '100px', height: `${100 - b}px`, background: 'rgba(0,0,0,0.25)' }}
+                />
+            </>
+            {isSelected && (
+                <div className="absolute top-[3px] right-[3px] z-50 size-4 flex items-center justify-center bg-white text-neutral-800 text-xs px-1 rounded-sm">
+                    <Check className="w-4 h-4" />
+                </div>
+            )}
+        </button>
+    );
+}
+
+type PageProps = {
+    zipName: string;
+};
+
+export function Page({ zipName }: PageProps) {
     const [items, setItems] = useState<ImageItem[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [authPromptVisible, setAuthPromptVisible] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [importTotal, setImportTotal] = useState(0);
     const [importDone, setImportDone] = useState(0);
@@ -63,8 +167,10 @@ export function Page() {
                         }
                     }
                 } catch {}
+                const id = Math.random().toString(36).slice(2);
                 resolve({
-                    id: Math.random().toString(36).slice(2),
+                    id,
+                    baseId: id,
                     url,
                     originalWidth: img.naturalWidth,
                     originalHeight: img.naturalHeight,
@@ -88,11 +194,12 @@ export function Page() {
 
     const handleFiles = useCallback(async (files: FileList | File[]) => {
         const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
-        if (fileArray.length > 10) {
-            setAuthPromptVisible(true);
+        if (fileArray.length === 0) return;
+        const originalsCount = items.filter((it) => (it.baseId ?? it.id) === it.id).length;
+        if (originalsCount + fileArray.length > 20) {
+            window.alert("Você só pode carregar até 20 imagens originais.");
             return;
         }
-        if (fileArray.length === 0) return;
         setIsImporting(true);
         setImportTotal(fileArray.length);
         setImportDone(0);
@@ -109,6 +216,17 @@ export function Page() {
             setSelectedId(filtered[0].id);
         }
         setIsImporting(false);
+    }, [items, selectedId]);
+    
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        setItems((prev) => {
+            const oldIndex = prev.findIndex((i) => i.id === active.id);
+            const newIndex = prev.findIndex((i) => i.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return prev;
+            return arrayMove(prev, oldIndex, newIndex);
+        });
     }, []);
 
     const openPicker = useCallback(() => {
@@ -117,10 +235,14 @@ export function Page() {
         el.click();
     }, []);
 
-    const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            handleFiles(e.target.files);
-            e.target.value = "";
+    const onFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            try {
+                await handleFiles(files);
+            } finally {
+                e.target.value = "";
+            }
         }
     }, [handleFiles]);
 
@@ -128,11 +250,11 @@ export function Page() {
         e.preventDefault();
     }, []);
 
-    const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    const onDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         const { files } = e.dataTransfer;
         if (files && files.length > 0) {
-            handleFiles(files);
+            await handleFiles(files);
         }
     }, [handleFiles]);
 
@@ -164,11 +286,18 @@ export function Page() {
         setItems((prev) => {
             const target = prev.find((i) => i.id === id);
             if (target) {
-                URL.revokeObjectURL(target.url);
-                if (target.thumbUrl) URL.revokeObjectURL(target.thumbUrl);
+                const othersShareUrl = prev.some((it) => it.id !== id && it.url === target.url);
+                if (!othersShareUrl) {
+                    URL.revokeObjectURL(target.url);
+                }
+                if (target.thumbUrl) {
+                    const othersShareThumb = prev.some((it) => it.id !== id && it.thumbUrl === target.thumbUrl);
+                    if (!othersShareThumb) {
+                        URL.revokeObjectURL(target.thumbUrl);
+                    }
+                }
             }
-            const next = prev.filter((it) => it.id !== id);
-            return next;
+            return prev.filter((it) => it.id !== id);
         });
     }, []);
 
@@ -181,6 +310,58 @@ export function Page() {
             return [];
         });
         setSelectedId(null);
+    }, []);
+
+    const onDuplicate = useCallback((id: string) => {
+        let newId: string | null = null;
+        setItems((prev) => {
+            const src = prev.find((i) => i.id === id);
+            if (!src) return prev;
+            const baseId = src.baseId ?? src.id;
+            const siblings = prev.filter((i) => (i.baseId ?? i.id) === baseId);
+
+            const groupRoot = siblings.find((i) => (i.baseId ?? i.id) === baseId && i.id === baseId) ?? src;
+            const originalBase = groupRoot.filename.replace(/\.[^.]+$/, '');
+            const ext = (groupRoot.filename.match(/(\.[^.]+)$/)?.[1]) || '';
+
+            const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`^${escapeRegExp(originalBase)}-(\\d+)$`, 'i');
+            let maxIndex = 0;
+            for (const sib of siblings) {
+                const baseName = sib.filename.replace(/\.[^.]+$/, '');
+                const match = baseName.match(re);
+                if (match) {
+                    const n = parseInt(match[1], 10);
+                    if (!Number.isNaN(n) && n > maxIndex) maxIndex = n;
+                }
+            }
+            const nextIndex = maxIndex + 1;
+            const newBase = `${originalBase}-${nextIndex}`;
+            const candidateBaseLower = newBase.toLowerCase();
+            const collision = prev.some((it) => it.filename.replace(/\.[^.]+$/, '').toLowerCase() === candidateBaseLower);
+            const finalBase = collision ? `${originalBase}-${Math.random().toString(36).slice(2, 6)}` : newBase;
+
+            const idClone = Math.random().toString(36).slice(2);
+            newId = idClone;
+            const clone: ImageItem = {
+                ...src,
+                id: idClone,
+                baseId,
+                filename: `${finalBase}${ext}`,
+                crop: { x: 0, y: 0 },
+                zoom: 1,
+                croppedAreaPixels: null,
+            };
+            const baseIndex = prev.findIndex((i) => i.id === baseId);
+            const srcIndex = prev.findIndex((i) => i.id === src.id);
+            const insertAfterIndex = baseIndex >= 0 ? baseIndex : (srcIndex >= 0 ? srcIndex : prev.length - 1);
+            const next = [...prev];
+            next.splice(insertAfterIndex + 1, 0, clone);
+            return next;
+        });
+        if (newId) {
+            setSelectedId(newId);
+        }
     }, []);
 
     const onRename = useCallback((id: string, newBase: string) => {
@@ -205,6 +386,13 @@ export function Page() {
         }
         return false;
     }, [items]);
+
+    useEffect(() => {
+        const disabled = hasDuplicateBaseNames || isExporting || items.length === 0;
+        window.dispatchEvent(new CustomEvent("smart-resize-download-state", { detail: { disabled } }));
+    }, [hasDuplicateBaseNames, isExporting, items.length]);
+
+    
 
     const computeDefaultCrop = (it: ImageItem): Area => {
         const ow = it.originalWidth;
@@ -275,7 +463,7 @@ export function Page() {
                 const blob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b as Blob), mime, q as number));
                 const base = it.filename.replace(/\.[^.]+$/, '');
                 const ext = outputFormat === 'png' ? 'png' : 'jpg';
-                const fname = `${base}_cropped.${ext}`;
+                const fname = `${base}.${ext}`;
                 zip.file(fname, blob);
             } catch {}
             setExportDone((d) => d + 1);
@@ -284,13 +472,25 @@ export function Page() {
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'images.zip';
+        const baseName = zipName.trim() || 'images';
+        a.download = `${baseName}.zip`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
         setIsExporting(false);
-    }, [items, cropWidth, cropHeight, outputCompression, outputFormat, jpegBgColor]);
+    }, [items, cropWidth, cropHeight, outputCompression, outputFormat, jpegBgColor, zipName]);
+
+    useEffect(() => {
+        const handler = () => {
+            const disabled = hasDuplicateBaseNames || isExporting || items.length === 0;
+            if (!disabled) {
+                void processAllAndDownload();
+            }
+        };
+        window.addEventListener("smart-resize-download-all", handler);
+        return () => window.removeEventListener("smart-resize-download-all", handler);
+    }, [hasDuplicateBaseNames, isExporting, items.length, processAllAndDownload]);
 
     const selectedItem = selectedId ? items.find((i) => i.id === selectedId) || null : null;
 
@@ -321,7 +521,6 @@ export function Page() {
             />
             <div className="flex-1 bg-neutral-50 h-full min-w-0">
                 <ImportProgressDialog open={isImporting} importDone={importDone} importTotal={importTotal} />
-                <AuthPromptDialog open={authPromptVisible} onOpenChange={setAuthPromptVisible} />
                 <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
                 {items.length === 0 ? (
                     <div className="w-full h-full rounded-lg flex gap-2 items-center justify-center relative">
@@ -357,91 +556,35 @@ export function Page() {
                                         outputFormat={outputFormat}
                                         jpegBgColor={jpegBgColor}
                                         onRename={onRename}
+                                        onDuplicate={onDuplicate}
                                     />
                                 </div>
                             )}
                         </div>
                         <div className="h-[120px] shrink-0 w-full min-w-0 overflow-x-auto overflow-y-hidden scrollbar-modern">
-                            <div className="inline-flex flex-nowrap gap-2 p-1 mb-2 w-fit">
-                                {items.map((item) => (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => setSelectedId(item.id)}
-                                        className={`w-[100px] h-[100px] shrink-0 rounded-lg border overflow-hidden relative ${selectedId === item.id ? 'border-neutral-800 outline-2 outline-offset-2 ring-offset-2 ring-neutral-800' : 'border-neutral-200 hover:border-neutral-300'}`}
-                                    >
-                                        <img src={item.thumbUrl || item.url} alt={item.filename} className="w-full h-full object-contain block" />
-                                        {(() => {
-                                            const CW = 100, CH = 100;
-                                            const ow = item.originalWidth, oh = item.originalHeight;
-                                            const cap = item.croppedAreaPixels || (() => {
-                                                const aspect = cropWidth > 0 && cropHeight > 0 ? cropWidth / cropHeight : 1;
-                                                let w = 0, h = 0;
-                                                if (ow / oh > aspect) { h = oh; w = h * aspect; } else { w = ow; h = w / aspect; }
-                                                const x = (ow - w) / 2; const y = (oh - h) / 2;
-                                                return { x, y, width: w, height: h } as Area;
-                                            })();
-                                            const aspectImg = ow / oh;
-                                            let dispW = CW, dispH = CH, offsetX = 0, offsetY = 0;
-                                            if (aspectImg > (CW/CH)) {
-                                                dispW = CW; dispH = Math.round(CW / aspectImg); offsetY = Math.round((CH - dispH) / 2);
-                                            } else {
-                                                dispH = CH; dispW = Math.round(CH * aspectImg); offsetX = Math.round((CW - dispW) / 2);
-                                            }
-                                            const scaleX = dispW / ow; const scaleY = dispH / oh;
-                                            const leftPx = offsetX + Math.round(cap.x * scaleX);
-                                            const topPx = offsetY + Math.round(cap.y * scaleY);
-                                            const widthPx = Math.round(cap.width * scaleX);
-                                            const heightPx = Math.round(cap.height * scaleY);
-
-                                            const clamp = (v: number) => Math.max(0, Math.min(v, 100));
-                                            const l = clamp(leftPx);
-                                            const t = clamp(topPx);
-                                            const w = clamp(widthPx);
-                                            const h = clamp(heightPx);
-                                            const r = clamp(l + w);
-                                            const b = clamp(t + h);
-
-                                            return (
-                                                <>
-                                                    <span
-                                                        className="pointer-events-none"
-                                                        style={{
-                                                            position: 'absolute',
-                                                            left: `${l}px`,
-                                                            top: `${t}px`,
-                                                            width: `${w}px`,
-                                                            height: `${h}px`,
-                                                            border: '2px dashed #ffffff',
-                                                            borderRadius: '4px'
-                                                        }}
-                                                    />
-                                                    <span
-                                                        className="pointer-events-none"
-                                                        style={{ position: 'absolute', left: 0, top: 0, width: '100px', height: `${t}px`, background: 'rgba(0,0,0,0.25)' }}
-                                                    />
-                                                    <span
-                                                        className="pointer-events-none"
-                                                        style={{ position: 'absolute', left: 0, top: `${t}px`, width: `${l}px`, height: `${h}px`, background: 'rgba(0,0,0,0.25)' }}
-                                                    />
-                                                    <span
-                                                        className="pointer-events-none"
-                                                        style={{ position: 'absolute', left: `${r}px`, top: `${t}px`, width: `${100 - r}px`, height: `${h}px`, background: 'rgba(0,0,0,0.25)' }}
-                                                    />
-                                                    <span
-                                                        className="pointer-events-none"
-                                                        style={{ position: 'absolute', left: 0, top: `${b}px`, width: '100px', height: `${100 - b}px`, background: 'rgba(0,0,0,0.25)' }}
-                                                    />
-                                                </>
-                                            );
-                                        })()}
-                                        {selectedId === item.id && (
-                                            <div className="absolute top-[3px] right-[3px] z-50 size-4 flex items-center justify-center bg-white text-neutral-800 text-xs px-1 rounded-sm">
-                                                <Check className="w-4 h-4" />
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <SortableContext items={items.map((i) => i.id)} strategy={horizontalListSortingStrategy}>
+                                    <div className="inline-flex flex-nowrap gap-2 p-1 mb-2 w-fit">
+                                        {items.map((item) => (
+                                            <SortableThumbnail
+                                                key={item.id}
+                                                item={item}
+                                                isSelected={selectedId === item.id}
+                                                onSelect={() => setSelectedId(item.id)}
+                                                cropWidth={cropWidth}
+                                                cropHeight={cropHeight}
+                                            />
+                                        ))}
+                                        <button
+                                            onClick={openPicker}
+                                            disabled={isImporting}
+                                            className="w-[100px] h-[100px] shrink-0 rounded-lg border-2 border-dashed border-neutral-300 hover:border-neutral-400 bg-white flex items-center justify-center text-neutral-600 text-xs group hover:cursor-pointer"
+                                        >
+                                            <Plus className="size-6 text-neutral-300 group-hover:text-neutral-400" />
+                                        </button>
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     </div>
                 )}

@@ -141,13 +141,6 @@ export function Sidebar({
                         </div>
 
                         <div className="flex gap-4">
-                            <Button size={"lg"} className="w-full" onClick={onDownloadAll} disabled={downloadDisabled}>
-                                <Download className="w-4 h-4 text-white" />
-                                <span className="text-sm text-white">Crop & Download All</span>
-                            </Button>
-                        </div>
-
-                        <div className="flex gap-4">
                             <Button variant={"ghost"} size={"lg"} className="w-full text-red-400 hover:text-red-500" onClick={onClearAll}>
                                 <Trash2 className="w-4 h-4" />
                                 <span className="text-xs">Clear All</span>
