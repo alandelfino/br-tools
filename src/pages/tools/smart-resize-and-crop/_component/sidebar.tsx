@@ -48,27 +48,27 @@ export function Sidebar({
                     <ImageUpscale className="size-8 text-slate-300" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-sm font-bold">Smart Resize & Crop</span>
-                    <span className="text-xs text-slate-500">Ease and Fast</span>
+                    <span className="text-sm font-bold">Cortes &amp; Redimensionamentos</span>
+                    <span className="text-xs text-slate-500">Fácil e rápido</span>
                 </div>
             </div>
 
             <div className="p-4 gap-4 flex flex-col flex-1">
 
                 <div>
-                    <Label className="uppercase text-xs">Settings</Label>
+                    <Label className="uppercase text-xs">Configurações</Label>
                 </div>
 
                 <div className="flex justify-between gap-2">
                     <div className="flex flex-col gap-1">
-                        <span className="text-xs pl-1">Width</span>
+                        <span className="text-xs pl-1">Largura</span>
                         <div className="flex relative">
                             <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={1} placeholder="0" type="number" value={Number.isFinite(cropWidth) ? cropWidth : 0} onChange={(e) => onChangeCropWidth(parseInt(e.target.value || '0', 10))} />
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                        <span className="text-xs pl-1">Height</span>
+                        <span className="text-xs pl-1">Altura</span>
                         <div className="flex relative">
                             <Input className="bg-neutral-50 border px-2 rounded-md w-full h-7 text-xs" step={1} placeholder="0" type="number" value={Number.isFinite(cropHeight) ? cropHeight : 0} onChange={(e) => onChangeCropHeight(parseInt(e.target.value || '0', 10))} />
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">px</span>
@@ -78,33 +78,33 @@ export function Sidebar({
 
                 <div className="flex gap-2">
                     <div className="flex flex-col gap-1 w-full">
-                        <span className="text-xs pl-1">Zoom Precision</span>
+                        <span className="text-xs pl-1">Precisão do zoom</span>
                         <Input className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" placeholder="0" type="number" step={0.01} min={0.01} max={1} value={Number.isFinite(zoomPrecision) ? zoomPrecision : 0.06} onChange={(e) => onChangeZoomPrecision(parseFloat(e.target.value || '0.1'))} />
-                        <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Lower value = finer control</span>
+                        <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Valor menor = controle mais fino</span>
                     </div>
                 </div>
 
                 <div className="flex gap-4">
                     <div className="flex flex-col gap-1 w-full">
-                        <span className="text-xs pl-1">Output Compression</span>
+                        <span className="text-xs pl-1">Compressão de saída</span>
                         <Select value={outputCompression} onValueChange={(v) => onChangeOutputCompression(v as 'original' | 'low' | 'medium' | 'high')}>
                             <SelectTrigger className="bg-neutral-50 h-7! text-xs rounded-md border px-2 w-full">
-                                <SelectValue placeholder="Select" />
+                                <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                             <SelectContent className="bg-neutral-50 text-xs rounded-md border px-1 w-full">
                                 <SelectItem value="original" className="text-xs">Original</SelectItem>
-                                <SelectItem value="low" className="text-xs">Low Compression</SelectItem>
-                                <SelectItem value="medium" className="text-xs">Medium Compression</SelectItem>
-                                <SelectItem value="high" className="text-xs">High Compression</SelectItem>
+                                <SelectItem value="low" className="text-xs">Baixa compressão</SelectItem>
+                                <SelectItem value="medium" className="text-xs">Compressão média</SelectItem>
+                                <SelectItem value="high" className="text-xs">Alta compressão</SelectItem>
                             </SelectContent>
                         </Select>
-                        <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Reduces file size without visible loss</span>
+                        <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Reduz o tamanho do arquivo sem perda visível</span>
                     </div>
                 </div>
 
                 <div className="flex gap-4">
                     <div className="flex flex-col gap-1 w-full">
-                        <span className="text-xs pl-1">Output Format</span>
+                        <span className="text-xs pl-1">Formato de saída</span>
                         <Select value={outputFormat} onValueChange={(v) => onChangeOutputFormat(v as 'jpeg' | 'png')}>
                             <SelectTrigger className="bg-neutral-50 h-7! text-xs rounded-md border px-2 w-full">
                                 <SelectValue placeholder="Select" />
@@ -121,7 +121,7 @@ export function Sidebar({
                 {outputFormat === 'jpeg' && (
                     <div className="flex gap-4">
                         <div className="flex flex-col gap-1 w-full">
-                            <span className="text-xs pl-1">JPEG Background</span>
+                            <span className="text-xs pl-1">Fundo do JPEG</span>
                             <Input type="color" className="bg-neutral-50 w-26 h-7 text-xs rounded-md border px-2" value={jpegBgColor} onChange={(e) => onChangeJpegBgColor(e.target.value)} />
                             <span className="text-muted-foreground/50 text-[0.6rem] pl-1">Usado para áreas transparentes</span>
                         </div>
@@ -135,15 +135,15 @@ export function Sidebar({
                         <div className="flex gap-4">
                             <Button size={"lg"} className="bg-linear-to-r from-teal-200 to-yellow-200 w-full">
                                 <Sparkles className="w-4 h-4 text-slate-600" />
-                                <span className="text-sm text-slate-600">Auto Smart Ajust</span>
-                                <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Soon</span>
+                                <span className="text-sm text-slate-600">Ajuste inteligente</span>
+                                <span className="text-[0.7rem] text-neutral-500 bg-white border rounded px-1 ml-2">Em breve</span>
                             </Button>
                         </div>
 
                         <div className="flex gap-4">
                             <Button variant={"ghost"} size={"lg"} className="w-full text-red-400 hover:text-red-500" onClick={onClearAll}>
                                 <Trash2 className="w-4 h-4" />
-                                <span className="text-xs">Clear All</span>
+                                <span className="text-xs">Limpar tudo</span>
                             </Button>
                         </div>
                     </>

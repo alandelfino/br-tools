@@ -10,15 +10,15 @@ export function Topbar({ title }: { title: string }) {
                 <DropdownMenu>
                     <DropdownMenuTrigger className="px-3 py-2 border rounded-md text-sm">Menu</DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Billing</DropdownMenuItem>
-                        <DropdownMenuItem>Team</DropdownMenuItem>
-                        <DropdownMenuItem>Subscription</DropdownMenuItem>
+                        <DropdownMenuItem>Perfil</DropdownMenuItem>
+                        <DropdownMenuItem>Cobrança</DropdownMenuItem>
+                        <DropdownMenuItem>Equipe</DropdownMenuItem>
+                        <DropdownMenuItem>Assinatura</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="outline" className="text-sm" onClick={() => {}}>Login</Button>
+                <Button variant="outline" className="text-sm" onClick={() => {}}>Entrar</Button>
             </div>
         </div>
     )

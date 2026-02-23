@@ -296,7 +296,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2">
                 <div className="w-6 h-6 rounded-full border-2 border-neutral-300 border-t-neutral-700 animate-spin"></div>
-                <span className="text-[11px] text-neutral-500">Loading image...</span>
+                <span className="text-[11px] text-neutral-500">Carregando imagem...</span>
               </div>
             </div>
           )}
@@ -339,7 +339,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
               onClick={handleZoomOut}
               disabled={item.zoom <= minZoom}
               className="p-1 hover:bg-white hover:shadow-sm rounded text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all"
-              title="Zoom Out"
+              title="Diminuir zoom"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
@@ -363,7 +363,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
               onClick={handleZoomIn}
               disabled={item.zoom >= MAX_ZOOM}
               className="p-1 hover:bg-white hover:shadow-sm rounded text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all"
-              title="Zoom In"
+              title="Aumentar zoom"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -397,7 +397,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
                           setIsEditingName(false);
                           setNameError("");
                         } else {
-                          setNameError("Name already exists or is invalid");
+                          setNameError("Nome já existe ou é inválido");
                         }
                       }}
                       onKeyDown={(e) => {
@@ -407,7 +407,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
                             setIsEditingName(false);
                             setNameError("");
                           } else {
-                            setNameError("Name already exists or is invalid");
+                            setNameError("Nome já existe ou é inválido");
                           }
                         }
                         if (e.key === "Escape") {
@@ -424,11 +424,11 @@ export const CropperItem: React.FC<CropperItemProps> = ({
                           setIsEditingName(false);
                           setNameError("");
                         } else {
-                          setNameError("Name already exists or is invalid");
+                          setNameError("Nome já existe ou é inválido");
                         }
                       }}
                       className="p-1 rounded bg-neutral-100 hover:bg-neutral-200 text-gray-700"
-                      title="Confirm"
+                      title="Confirmar"
                     >
                       <Check className="w-3.5 h-3.5" />
                     </button>
@@ -441,7 +441,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" title="Options">
+                <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" title="Opções">
                   <MoreVertical className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -454,24 +454,24 @@ export const CropperItem: React.FC<CropperItemProps> = ({
                     setNameError("");
                   }}
                 >
-                  Rename
+                  Renomear
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDuplicate(item.id)}>
                   Adicionar variação
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onRemove(item.id)} className="text-red-600">
-                  Remove
+                  Remover
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] text-neutral-500">Original</span>
-            <span className="text-[11px]">Resolution: {item.originalWidth} x {item.originalHeight}</span>
-            <span className="text-[11px]">Size: {item.originalSizeBytes ? (item.originalSizeBytes >= 1048576 ? `${(item.originalSizeBytes/1048576).toFixed(2).replace('.', ',')} Mb` : `${(item.originalSizeBytes/1024).toFixed(2).replace('.', ',')} Kb`) : "-"}</span>
+            <span className="text-[11px]">Resolução: {item.originalWidth} x {item.originalHeight}</span>
+            <span className="text-[11px]">Tamanho: {item.originalSizeBytes ? (item.originalSizeBytes >= 1048576 ? `${(item.originalSizeBytes/1048576).toFixed(2).replace('.', ',')} Mb` : `${(item.originalSizeBytes/1024).toFixed(2).replace('.', ',')} Kb`) : "-"}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] text-neutral-500">Output</span>
+            <span className="text-[10px] text-neutral-500">Saída</span>
             <span className="text-[11px]">{cropSize ? `${cropSize.width} x ${cropSize.height}` : "-"}</span>
             <span className="text-[11px]">
               {(() => {

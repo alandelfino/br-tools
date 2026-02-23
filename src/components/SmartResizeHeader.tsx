@@ -41,7 +41,7 @@ export function SmartResizeHeader({ zipName, onZipNameChange }: SmartResizeHeade
               value={base}
               onChange={(e) => onZipNameChange(e.target.value)}
               className="h-8 px-2 rounded-md border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
-              placeholder="images"
+              placeholder="imagens"
             />
             <span className="text-xs text-slate-400">.zip</span>
           </div>
@@ -52,7 +52,7 @@ export function SmartResizeHeader({ zipName, onZipNameChange }: SmartResizeHeade
             disabled={downloadDisabled}
           >
             <Download className="w-4 h-4 mr-1" />
-            Download All
+            Baixar tudo
           </Button>
         </div>
       </div>
