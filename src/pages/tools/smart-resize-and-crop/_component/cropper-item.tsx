@@ -46,9 +46,133 @@ export const CropperItem: React.FC<CropperItemProps> = ({
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [estimatedBytes, setEstimatedBytes] = useState<number | null>(null);
   const [zoomInput, setZoomInput] = useState<string>(() => Math.round(item.zoom * 100).toString());
+  
+  // Selection Zoom State
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{ x: number, y: number } | null>(null);
+  const [selectionCurrent, setSelectionCurrent] = useState<{ x: number, y: number } | null>(null);
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
 
   // Maximum zoom level allowed.
   const MAX_ZOOM = 10;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Control') setIsCtrlPressed(true);
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Control') setIsCtrlPressed(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Handle Selection Zoom
+  const handleMouseDownCapture = (e: React.MouseEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      setSelectionStart({ x, y });
+      setSelectionCurrent({ x, y });
+      setIsSelecting(true);
+    }
+  };
+
+  const handleMouseMoveCapture = (e: React.MouseEvent) => {
+    if (!isSelecting) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Constrain to container bounds
+    const constrainedX = Math.max(0, Math.min(x, rect.width));
+    const constrainedY = Math.max(0, Math.min(y, rect.height));
+
+    setSelectionCurrent({ x: constrainedX, y: constrainedY });
+  };
+
+  const handleMouseUpCapture = (e: React.MouseEvent) => {
+    if (!isSelecting || !selectionStart || !selectionCurrent) return;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsSelecting(false);
+    
+    const startX = Math.min(selectionStart.x, selectionCurrent.x);
+    const startY = Math.min(selectionStart.y, selectionCurrent.y);
+    const width = Math.abs(selectionCurrent.x - selectionStart.x);
+    const height = Math.abs(selectionCurrent.y - selectionStart.y);
+    
+    // Ignore small selections (accidental clicks)
+    if (width < 10 || height < 10) {
+      setSelectionStart(null);
+      setSelectionCurrent(null);
+      return;
+    }
+
+    // Calculate new zoom and center
+    if (!containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const W_c = rect.width;
+    const H_c = rect.height;
+    
+    // Selection center relative to container
+    const C_S_x = startX + width / 2;
+    const C_S_y = startY + height / 2;
+    
+    // Current crop offset (center of image relative to center of container)
+    const Offset_curr_x = item.crop.x;
+    const Offset_curr_y = item.crop.y;
+    
+    // Center of container
+    const C_c_x = W_c / 2;
+    const C_c_y = H_c / 2;
+    
+    // Calculate scale factor
+    // Use effectiveCropSize if available, otherwise container size
+    const targetW = effectiveCropSize ? effectiveCropSize.width : W_c;
+    const targetH = effectiveCropSize ? effectiveCropSize.height : H_c;
+    
+    const scaleX = targetW / width;
+    const scaleY = targetH / height;
+    const scale = Math.min(scaleX, scaleY);
+    
+    let newZoom = item.zoom * scale;
+    
+    // Clamp zoom
+    if (newZoom < minZoom) newZoom = minZoom;
+    if (newZoom > MAX_ZOOM) newZoom = MAX_ZOOM;
+    
+    // Re-calculate actual scale used
+    const actualScale = newZoom / item.zoom;
+    
+    // Calculate new offset
+    const newOffsetX = (C_c_x + Offset_curr_x - C_S_x) * actualScale;
+    const newOffsetY = (C_c_y + Offset_curr_y - C_S_y) * actualScale;
+    
+    onZoomChange(item.id, newZoom);
+    onCropChange(item.id, { x: newOffsetX, y: newOffsetY });
+    
+    setSelectionStart(null);
+    setSelectionCurrent(null);
+  };
 
   const handleCropChange = (location: Point) => {
     onCropChange(item.id, location);
@@ -291,7 +415,29 @@ export const CropperItem: React.FC<CropperItemProps> = ({
     >
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="relative flex-1 w-full min-h-0" ref={containerRef}>
+        <div 
+          className={`relative flex-1 w-full min-h-0 ${isSelecting || isCtrlPressed ? 'cursor-crosshair [&_*]:cursor-crosshair' : ''}`}
+          ref={containerRef}
+          onMouseDownCapture={handleMouseDownCapture}
+          onMouseMoveCapture={handleMouseMoveCapture}
+          onMouseUpCapture={handleMouseUpCapture}
+        >
+          {isSelecting && selectionStart && selectionCurrent && (
+            <div
+              style={{
+                position: 'absolute',
+                left: Math.min(selectionStart.x, selectionCurrent.x),
+                top: Math.min(selectionStart.y, selectionCurrent.y),
+                width: Math.abs(selectionCurrent.x - selectionStart.x),
+                height: Math.abs(selectionCurrent.y - selectionStart.y),
+                border: '1px dashed #fff',
+                backgroundColor: 'rgba(0, 120, 255, 0.3)',
+                zIndex: 50,
+                pointerEvents: 'none',
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.5)'
+              }}
+            />
+          )}
           {!isImageLoaded && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2">
@@ -313,7 +459,7 @@ export const CropperItem: React.FC<CropperItemProps> = ({
               onZoomChange={handleZoomChange}
               onCropComplete={handleCropComplete}
               showGrid={true}
-              zoomSpeed={zoomSpeed}
+              zoomSpeed={isCtrlPressed ? zoomSpeed * 3 : zoomSpeed}
               maxZoom={MAX_ZOOM}
               classes={{
                 containerClassName: "", 

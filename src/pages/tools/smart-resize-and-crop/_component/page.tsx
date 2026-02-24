@@ -123,9 +123,9 @@ export function Page({ zipName }: PageProps) {
     const [isImporting, setIsImporting] = useState(false);
     const [importTotal, setImportTotal] = useState(0);
     const [importDone, setImportDone] = useState(0);
-    const [cropWidth, setCropWidth] = useState<number>(500);
-    const [cropHeight, setCropHeight] = useState<number>(500);
-    const [zoomPrecision, setZoomPrecision] = useState<number>(0.06);
+    const [cropWidth, setCropWidth] = useState<number>(1000);
+    const [cropHeight, setCropHeight] = useState<number>(1376);
+    const [zoomPrecision, setZoomPrecision] = useState<number>(0.1);
     const [outputCompression, setOutputCompression] = useState<'original' | 'low' | 'medium' | 'high'>('original');
     const [outputFormat, setOutputFormat] = useState<'jpeg' | 'png'>('jpeg');
     const [jpegBgColor, setJpegBgColor] = useState<string>('#ffffff');
